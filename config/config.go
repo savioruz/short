@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-
-	"github.com/joho/godotenv"
 )
 
 // Config holds the configuration settings for the application
@@ -29,21 +27,13 @@ type RedisConfig struct {
 
 // LoadConfig loads configuration from environment variables
 func LoadConfig() (*Config, error) {
-	// Load environment variables from .env file if present
-	if err := godotenv.Load(); err != nil {
-		return nil, fmt.Errorf("error loading .env file: %v", err)
-	}
-
 	// Get server configuration
 	host := getEnv("APP_HOST", "localhost")
 	port := getEnv("APP_PORT", "3000")
 
 	// Get Redis configuration
 	redisHost := getEnv("REDIS_HOST", "localhost")
-	redisPort, err := strconv.Atoi(getEnv("REDIS_PORT", "6379"))
-	if err != nil {
-		return nil, fmt.Errorf("invalid REDIS_PORT value: %v", err)
-	}
+	redisPort := getEnv("REDIS_PORT", "6379")
 	redisPassword := getEnv("REDIS_PASSWORD", "")
 	redisDB, err := strconv.Atoi(getEnv("REDIS_DB", "0"))
 	if err != nil {
@@ -56,7 +46,7 @@ func LoadConfig() (*Config, error) {
 			Port: port,
 		},
 		Redis: RedisConfig{
-			Addr:     fmt.Sprintf("%s:%d", redisHost, redisPort),
+			Addr:     fmt.Sprintf("%s:%s", redisHost, redisPort),
 			Password: redisPassword,
 			DB:       redisDB,
 		},

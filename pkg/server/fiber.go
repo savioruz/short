@@ -37,20 +37,6 @@ func NewFiberServer(conf *config.Config) Fiber {
 	}
 }
 
-// NewFiberAdaptor is a function to initialize the fiber adaptor for vercel serverless
-func NewFiberAdaptor() Fiber {
-	a := fiber.New()
-
-	// Middleware
-	middlewares.FiberMiddleware(a)
-	middlewares.LimiterMiddleware(a)
-	middlewares.MonitorMiddleware(a)
-
-	return Fiber{
-		app: a,
-	}
-}
-
 func (s *Fiber) ServerStart() {
 	s.initializeShortURLHandler()
 	s.initializeRoutes()
