@@ -22,6 +22,7 @@ type Fiber struct {
 	conf *config.Config
 }
 
+// NewFiberServer is a function to initialize the fiber server
 func NewFiberServer(conf *config.Config) Fiber {
 	a := fiber.New()
 
@@ -33,6 +34,20 @@ func NewFiberServer(conf *config.Config) Fiber {
 	return Fiber{
 		app:  a,
 		conf: conf,
+	}
+}
+
+// NewFiberAdaptor is a function to initialize the fiber adaptor for vercel serverless
+func NewFiberAdaptor() Fiber {
+	a := fiber.New()
+
+	// Middleware
+	middlewares.FiberMiddleware(a)
+	middlewares.LimiterMiddleware(a)
+	middlewares.MonitorMiddleware(a)
+
+	return Fiber{
+		app: a,
 	}
 }
 
