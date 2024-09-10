@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/gofiber/fiber/v2/middleware/adaptor"
 	"github.com/savioruz/short/config"
 	"github.com/savioruz/short/internal/adapters/cache"
 	"github.com/savioruz/short/internal/adapters/handlers"
@@ -11,6 +12,7 @@ import (
 	"github.com/savioruz/short/internal/cores/services"
 	"github.com/savioruz/short/pkg/middlewares"
 	"github.com/savioruz/short/pkg/routes"
+	"net/http"
 	"os"
 	"os/signal"
 )
@@ -40,9 +42,11 @@ func (s *Fiber) ServerStart() {
 	s.startServerWithGrafeculShutdown()
 }
 
-func (s *Fiber) Adaptor() {
+func (s *Fiber) Adaptor() http.HandlerFunc {
 	s.initializeShortURLHandler()
 	s.initializeRoutes()
+
+	return adaptor.FiberApp(s.app)
 }
 
 func (s *Fiber) initializeRoutes() {
