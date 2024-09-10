@@ -1,0 +1,84 @@
+basePath: /api/v1
+definitions:
+  entities.CreateShortURLRequest:
+    properties:
+      custom_url:
+        example: shorturl
+        minLength: 5
+        type: string
+      duration:
+        example: 3
+        type: integer
+      original_url:
+        example: https://www.google.com/
+        type: string
+    required:
+    - original_url
+    type: object
+  entities.CreateShortURLResponse:
+    properties:
+      expires:
+        type: string
+      short_url:
+        type: string
+      url:
+        type: string
+    type: object
+  entities.ShortURLResponseError:
+    properties:
+      error:
+        type: string
+    type: object
+  entities.ShortURLResponseSuccess:
+    properties:
+      data:
+        $ref: '#/definitions/entities.CreateShortURLResponse'
+    type: object
+info:
+  contact:
+    email: jakueenak@gmail.com
+    name: API Support
+  description: This is an auto-generated API Docs.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Short URL API
+  version: "0.1"
+paths:
+  /shorten:
+    post:
+      consumes:
+      - application/json
+      description: Shorten a URL
+      parameters:
+      - description: Create Short URL Request
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreateShortURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ShortURLResponseSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/entities.ShortURLResponseError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/entities.ShortURLResponseError'
+      summary: shorten a URL
+      tags:
+      - ShortURL
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
