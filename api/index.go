@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"github.com/gofiber/fiber/v2/log"
 	"github.com/savioruz/short/config"
 	_ "github.com/savioruz/short/docs"
 	"github.com/savioruz/short/pkg/server"
@@ -14,7 +13,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	conf, err := config.LoadConfig()
 	if err != nil {
-		log.Fatalf("Error loading config: %v", err)
+		http.Error(w, "Error loading config", http.StatusInternalServerError)
+		return
 	}
 
 	s := server.NewFiberServer(conf)
