@@ -66,9 +66,9 @@ func (s *Fiber) initializeShortURLHandler() {
 	handler := handlers.NewShortURLHandler(service)
 
 	r := s.app.Group("/api/v1")
-
 	r.Post("/shorten", handler.CreateShortURL)
-	r.Get("/:url", handler.ResolveURL)
+
+	s.app.Get("/:url", handler.ResolveURL)
 }
 
 func (s *Fiber) startServerWithGrafeculShutdown() {

@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/redis/go-redis/v9"
 	"github.com/savioruz/short/internal/cores/entities"
 	"github.com/savioruz/short/internal/cores/services"
 	"time"
@@ -70,12 +72,16 @@ func (h *ShortURLHandler) ResolveURL(c *fiber.Ctx) error {
 		})
 	}
 
-	longURL, err := h.service.GetLongURL(shortCode)
-	if err != nil {
+	originalURL, err := h.service.GetLongURL(shortCode)
+	if errors.Is(err, redis.Nil) {
 		return c.Status(fiber.StatusNotFound).JSON(entities.ShortURLResponseError{
-			Error: "Short URL not found",
+			Error: "URL not found",
+		})
+	} else if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(entities.ShortURLResponseError{
+			Error: err.Error(),
 		})
 	}
 
-	return c.Redirect(longURL, fiber.StatusMovedPermanently)
+	return c.Redirect(originalURL, fiber.StatusMovedPermanently)
 }

@@ -12,8 +12,9 @@ func (s *DB) CreateShortURL(originalURL string, shortCode *string, duration *tim
 	if shortCode == nil || *shortCode == "" {
 		customCode = uuid.NewString()[:6]
 	} else {
-		existingURL := s.cache.Get(*shortCode, &entities.ShortURL{})
-		if existingURL != nil {
+		var shortURL entities.ShortURL
+		err := s.cache.Get(*shortCode, &shortURL)
+		if err == nil || shortURL.ShortCode != "" {
 			return nil, errors.New("custom url already exists")
 		}
 		customCode = *shortCode
@@ -33,6 +34,11 @@ func (s *DB) CreateShortURL(originalURL string, shortCode *string, duration *tim
 		ShortCode:   customCode,
 		CreatedAt:   now,
 		ExpiresAt:   expiresAt,
+	}
+
+	set := s.cache.Set(customCode, shortURL, expiresAt.Sub(now))
+	if set != nil {
+		return nil, errors.New("failed to set cache")
 	}
 
 	return shortURL, nil
