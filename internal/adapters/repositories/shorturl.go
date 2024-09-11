@@ -2,24 +2,26 @@ package repositories
 
 import (
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/savioruz/short/internal/cores/entities"
 	"time"
 )
 
 func (s *DB) CreateShortURL(originalURL string, shortCode *string, duration *int8) (*entities.ShortURL, error) {
-	var customCode string
+	var shorten, key string
 	if shortCode == nil || *shortCode == "" {
-		customCode = uuid.NewString()[:6]
+		shorten = uuid.NewString()[:6]
 	} else {
 		var shortURL entities.ShortURL
 		err := s.cache.Get(*shortCode, &shortURL)
 		if err == nil || shortURL.ShortCode != "" {
 			return nil, errors.New("custom url already exists")
 		}
-		customCode = *shortCode
+		shorten = *shortCode
 	}
 
+	key = fmt.Sprintf("shorten:%s", shorten)
 	now := time.Now()
 	defaultDuration := 24 * time.Hour
 	var expiresAt time.Time
@@ -34,12 +36,12 @@ func (s *DB) CreateShortURL(originalURL string, shortCode *string, duration *int
 
 	shortURL := &entities.ShortURL{
 		OriginalURL: originalURL,
-		ShortCode:   customCode,
+		ShortCode:   shorten,
 		CreatedAt:   now,
 		ExpiresAt:   expiresAt,
 	}
 
-	set := s.cache.Set(customCode, shortURL, expireDuration)
+	set := s.cache.Set(key, shortURL, expireDuration)
 	if set != nil {
 		return nil, errors.New("failed to set cache")
 	}
@@ -49,8 +51,9 @@ func (s *DB) CreateShortURL(originalURL string, shortCode *string, duration *int
 
 func (s *DB) GetLongURL(shortCode string) (string, error) {
 	var shortURL entities.ShortURL
+	key := fmt.Sprintf("shorten:%s", shortCode)
 
-	err := s.cache.Get(shortCode, &shortURL)
+	err := s.cache.Get(key, &shortURL)
 	if err != nil {
 		return "", errors.New("could not retrieve URL from cache")
 	}
