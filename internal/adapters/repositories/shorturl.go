@@ -18,7 +18,7 @@ func (s *DB) CreateShortURL(originalURL string, shortCode *string, duration *int
 		key = s.SetKey("shorten", *shortCode)
 		err := s.cache.Get(key, &shortURL)
 		if err == nil || shortURL.ShortCode != "" {
-			return nil, errors.New("custom url already exists")
+			return nil, errors.New("shorten custom url already exists")
 		}
 		shorten = *shortCode
 	}
