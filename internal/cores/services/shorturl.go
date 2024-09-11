@@ -3,7 +3,6 @@ package services
 import (
 	"github.com/savioruz/short/internal/cores/entities"
 	"github.com/savioruz/short/internal/cores/ports"
-	"time"
 )
 
 type ShortURLService struct {
@@ -16,7 +15,7 @@ func NewShortURLService(repo ports.ShortURLRepository) *ShortURLService {
 	}
 }
 
-func (s *ShortURLService) CreateShortURL(originalURL string, shortCode *string, duration *time.Duration) (*entities.ShortURL, error) {
+func (s *ShortURLService) CreateShortURL(originalURL string, shortCode *string, duration *int8) (*entities.ShortURL, error) {
 	return s.repo.CreateShortURL(originalURL, shortCode, duration)
 }
 

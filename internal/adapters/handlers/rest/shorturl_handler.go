@@ -43,7 +43,7 @@ func (h *ShortURLHandler) CreateShortURL(c *fiber.Ctx) error {
 		return HandleError(c, fiber.StatusBadRequest, err)
 	}
 
-	s, err := h.service.CreateShortURL(req.OriginalURL, req.CustomURL, (*time.Duration)(req.Duration))
+	s, err := h.service.CreateShortURL(req.OriginalURL, req.CustomURL, req.Duration)
 	if err != nil {
 		return HandleError(c, fiber.StatusInternalServerError, err)
 	}

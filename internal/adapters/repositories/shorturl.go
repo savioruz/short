@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func (s *DB) CreateShortURL(originalURL string, shortCode *string, duration *time.Duration) (*entities.ShortURL, error) {
+func (s *DB) CreateShortURL(originalURL string, shortCode *string, duration *int8) (*entities.ShortURL, error) {
 	var customCode string
 	if shortCode == nil || *shortCode == "" {
 		customCode = uuid.NewString()[:6]
@@ -23,10 +23,13 @@ func (s *DB) CreateShortURL(originalURL string, shortCode *string, duration *tim
 	now := time.Now()
 	defaultDuration := 24 * time.Hour
 	var expiresAt time.Time
+	var expireDuration time.Duration
 	if duration != nil {
-		expiresAt = now.Add(*duration * defaultDuration)
+		expiresAt = now.Add((time.Duration(*duration)) * defaultDuration)
+		expireDuration = (time.Duration(*duration)) * defaultDuration
 	} else {
 		expiresAt = now.Add(defaultDuration)
+		expireDuration = defaultDuration
 	}
 
 	shortURL := &entities.ShortURL{
@@ -36,7 +39,7 @@ func (s *DB) CreateShortURL(originalURL string, shortCode *string, duration *tim
 		ExpiresAt:   expiresAt,
 	}
 
-	set := s.cache.Set(customCode, shortURL, expiresAt.Sub(now))
+	set := s.cache.Set(customCode, shortURL, expireDuration)
 	if set != nil {
 		return nil, errors.New("failed to set cache")
 	}
