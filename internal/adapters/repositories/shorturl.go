@@ -15,14 +15,15 @@ func (s *DB) CreateShortURL(originalURL string, shortCode *string, duration *int
 		shorten = uuid.NewString()[:6]
 	} else {
 		var shortURL entities.ShortURL
-		err := s.cache.Get(*shortCode, &shortURL)
+		key = s.SetKey("shorten", *shortCode)
+		err := s.cache.Get(key, &shortURL)
 		if err == nil || shortURL.ShortCode != "" {
 			return nil, errors.New("custom url already exists")
 		}
 		shorten = *shortCode
 	}
 
-	key = fmt.Sprintf("shorten:%s", shorten)
+	key = s.SetKey("shorten", shorten)
 	now := time.Now()
 	var expiresAt time.Time
 	var expireDuration time.Duration
