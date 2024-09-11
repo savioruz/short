@@ -24,5 +24,7 @@ func FiberMiddleware(a *fiber.App) {
 		AllowHeaders: "Origin, Content-Type, Accept",
 		AllowMethods: "GET,POST",
 	}))
-	a.Use(requestid.New())
+	a.Use(requestid.New(requestid.Config{
+		Header: "x-request-id",
+	}))
 }

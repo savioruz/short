@@ -43,7 +43,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entities.CreateShortURLRequest"
+                            "$ref": "#/definitions/rest.CreateShortURLRequest"
                         }
                     }
                 ],
@@ -51,19 +51,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.ShortURLResponseSuccess"
+                            "$ref": "#/definitions/rest.ShortURLResponseSuccess"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/entities.ShortURLResponseError"
+                            "$ref": "#/definitions/rest.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/entities.ShortURLResponseError"
+                            "$ref": "#/definitions/rest.ErrorResponse"
                         }
                     }
                 }
@@ -71,7 +71,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "entities.CreateShortURLRequest": {
+        "rest.CreateShortURLRequest": {
             "type": "object",
             "required": [
                 "original_url"
@@ -92,7 +92,26 @@ const docTemplate = `{
                 }
             }
         },
-        "entities.CreateShortURLResponse": {
+        "rest.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "request_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "rest.ShortURLResponseSuccess": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/rest.createShortURLResponse"
+                }
+            }
+        },
+        "rest.createShortURLResponse": {
             "type": "object",
             "properties": {
                 "expires": {
@@ -103,22 +122,6 @@ const docTemplate = `{
                 },
                 "url": {
                     "type": "string"
-                }
-            }
-        },
-        "entities.ShortURLResponseError": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                }
-            }
-        },
-        "entities.ShortURLResponseSuccess": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/entities.CreateShortURLResponse"
                 }
             }
         }

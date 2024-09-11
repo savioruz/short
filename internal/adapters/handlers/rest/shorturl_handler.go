@@ -1,4 +1,4 @@
-package handlers
+package rest
 
 import (
 	"errors"
@@ -6,7 +6,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
-	"github.com/savioruz/short/internal/cores/entities"
 	"github.com/savioruz/short/internal/cores/services"
 	"time"
 )
@@ -29,34 +28,28 @@ func NewShortURLHandler(service *services.ShortURLService) *ShortURLHandler {
 // @Tags ShortURL
 // @Accept json
 // @Produce json
-// @Param data body entities.CreateShortURLRequest true "Create Short URL Request"
-// @Success 200 {object} entities.ShortURLResponseSuccess
-// @Failure 400 {object} entities.ShortURLResponseError
-// @Failure 500 {object} entities.ShortURLResponseError
+// @Param data body CreateShortURLRequest true "Create Short URL Request"
+// @Success 200 {object} ShortURLResponseSuccess
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /shorten [post]
 func (h *ShortURLHandler) CreateShortURL(c *fiber.Ctx) error {
-	var req entities.CreateShortURLRequest
+	var req CreateShortURLRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(entities.ShortURLResponseError{
-			Error: "Invalid request",
-		})
+		return HandleError(c, fiber.StatusBadRequest, errors.New("invalid request"))
 	}
 
 	if err := h.validator.Struct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(entities.ShortURLResponseError{
-			Error: "Validation failed : " + err.Error(),
-		})
+		return HandleError(c, fiber.StatusBadRequest, err)
 	}
 
 	s, err := h.service.CreateShortURL(req.OriginalURL, req.CustomURL, (*time.Duration)(req.Duration))
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(entities.ShortURLResponseError{
-			Error: err.Error(),
-		})
+		return HandleError(c, fiber.StatusInternalServerError, err)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(entities.ShortURLResponseSuccess{
-		Data: entities.CreateShortURLResponse{
+	return c.Status(fiber.StatusOK).JSON(ShortURLResponseSuccess{
+		Data: createShortURLResponse{
 			URL:      s.OriginalURL,
 			ShortURL: fmt.Sprintf("%s/%s", c.BaseURL(), s.ShortCode),
 			Expires:  s.ExpiresAt.Format(time.RFC3339),
@@ -67,20 +60,14 @@ func (h *ShortURLHandler) CreateShortURL(c *fiber.Ctx) error {
 func (h *ShortURLHandler) ResolveURL(c *fiber.Ctx) error {
 	shortCode := c.Params("url")
 	if shortCode == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(entities.ShortURLResponseError{
-			Error: "Invalid request",
-		})
+		return HandleError(c, fiber.StatusBadRequest, errors.New("invalid short code"))
 	}
 
 	originalURL, err := h.service.GetLongURL(shortCode)
 	if errors.Is(err, redis.Nil) {
-		return c.Status(fiber.StatusNotFound).JSON(entities.ShortURLResponseError{
-			Error: "URL not found",
-		})
+		return HandleError(c, fiber.StatusNotFound, errors.New("url not found"))
 	} else if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(entities.ShortURLResponseError{
-			Error: err.Error(),
-		})
+		return HandleError(c, fiber.StatusInternalServerError, err)
 	}
 
 	return c.Redirect(originalURL, fiber.StatusMovedPermanently)

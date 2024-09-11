@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  entities.CreateShortURLRequest:
+  rest.CreateShortURLRequest:
     properties:
       custom_url:
         example: shorturl
@@ -15,7 +15,19 @@ definitions:
     required:
     - original_url
     type: object
-  entities.CreateShortURLResponse:
+  rest.ErrorResponse:
+    properties:
+      error:
+        type: string
+      request_id:
+        type: string
+    type: object
+  rest.ShortURLResponseSuccess:
+    properties:
+      data:
+        $ref: '#/definitions/rest.createShortURLResponse'
+    type: object
+  rest.createShortURLResponse:
     properties:
       expires:
         type: string
@@ -23,16 +35,6 @@ definitions:
         type: string
       url:
         type: string
-    type: object
-  entities.ShortURLResponseError:
-    properties:
-      error:
-        type: string
-    type: object
-  entities.ShortURLResponseSuccess:
-    properties:
-      data:
-        $ref: '#/definitions/entities.CreateShortURLResponse'
     type: object
 info:
   contact:
@@ -57,22 +59,22 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/entities.CreateShortURLRequest'
+          $ref: '#/definitions/rest.CreateShortURLRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entities.ShortURLResponseSuccess'
+            $ref: '#/definitions/rest.ShortURLResponseSuccess'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/entities.ShortURLResponseError'
+            $ref: '#/definitions/rest.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/entities.ShortURLResponseError'
+            $ref: '#/definitions/rest.ErrorResponse'
       summary: shorten a URL
       tags:
       - ShortURL

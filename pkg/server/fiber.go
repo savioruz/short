@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
 	"github.com/savioruz/short/config"
 	"github.com/savioruz/short/internal/adapters/cache"
-	"github.com/savioruz/short/internal/adapters/handlers"
+	"github.com/savioruz/short/internal/adapters/handlers/rest"
 	"github.com/savioruz/short/internal/adapters/repositories"
 	"github.com/savioruz/short/internal/cores/services"
 	"github.com/savioruz/short/pkg/middlewares"
@@ -63,7 +63,7 @@ func (s *Fiber) initializeShortURLHandler() {
 
 	repos := repositories.NewDB(redis)
 	service := services.NewShortURLService(repos)
-	handler := handlers.NewShortURLHandler(service)
+	handler := rest.NewShortURLHandler(service)
 
 	r := s.app.Group("/api/v1")
 	r.Post("/shorten", handler.CreateShortURL)
