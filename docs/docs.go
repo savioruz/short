@@ -23,7 +23,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/paste": {
+        "/api/v1/paste": {
             "post": {
                 "description": "Create a paste",
                 "consumes": [
@@ -69,7 +69,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/shorten": {
+        "/api/v1/shorten": {
             "post": {
                 "description": "Shorten a URL",
                 "consumes": [
@@ -102,6 +102,59 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/{code}": {
+            "get": {
+                "description": "Resolve a short URL or paste data.\nNote: If got undocumented short URL, it will be redirected to the original URL means it's a short URL.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ShortURL"
+                ],
+                "summary": "resolve a short URL or paste data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Short URL code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/rest.PasteResponseSuccess"
+                        }
+                    },
+                    "301": {
+                        "description": "Moved Permanently"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/rest.ErrorResponse"
                         }
@@ -246,7 +299,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.1",
 	Host:             "",
-	BasePath:         "/api/v1",
+	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Short URL API",
 	Description:      "This is an auto-generated API Docs.",

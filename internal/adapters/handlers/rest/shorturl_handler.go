@@ -34,7 +34,7 @@ func NewShortURLHandler(shortURLService *services.ShortURLService, pasteService 
 // @Success 200 {object} ShortURLResponseSuccess
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /shorten [post]
+// @Router /api/v1/shorten [post]
 func (h *ShortURLHandler) CreateShortURL(c *fiber.Ctx) error {
 	var req CreateShortURLRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -60,6 +60,19 @@ func (h *ShortURLHandler) CreateShortURL(c *fiber.Ctx) error {
 }
 
 // ResolveURL function is a handler to resolve a short URL or paste data automatically
+// @Description Resolve a short URL or paste data.
+// @Description Note: If got undocumented short URL, it will be redirected to the original URL means it's a short URL.
+// @Summary resolve a short URL or paste data
+// @Tags ShortURL
+// @Accept json
+// @Produce json
+// @Param code path string true "Short URL code"
+// @Success 200 {object} PasteResponseSuccess
+// @Success 301
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /{code} [get]
 func (h *ShortURLHandler) ResolveURL(c *fiber.Ctx) error {
 	code := c.Params("code")
 	if code == "" {

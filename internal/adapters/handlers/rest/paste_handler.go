@@ -30,7 +30,7 @@ func NewPasteHandler(service *services.PasteService) *PasteHandler {
 // @Success 200 {object} PasteResponseSuccess
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /paste [post]
+// @Router /api/v1/paste [post]
 func (h *PasteHandler) CreatePaste(c *fiber.Ctx) error {
 	var req CreatePasteRequest
 	if err := c.BodyParser(&req); err != nil {

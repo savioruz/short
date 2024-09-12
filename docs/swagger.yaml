@@ -1,4 +1,4 @@
-basePath: /api/v1
+basePath: /
 definitions:
   rest.CreatePasteRequest:
     properties:
@@ -91,7 +91,44 @@ info:
   title: Short URL API
   version: "0.1"
 paths:
-  /paste:
+  /{code}:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Resolve a short URL or paste data.
+        Note: If got undocumented short URL, it will be redirected to the original URL means it's a short URL.
+      parameters:
+      - description: Short URL code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rest.PasteResponseSuccess'
+        "301":
+          description: Moved Permanently
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: resolve a short URL or paste data
+      tags:
+      - ShortURL
+  /api/v1/paste:
     post:
       consumes:
       - application/json
@@ -121,7 +158,7 @@ paths:
       summary: create a paste
       tags:
       - Paste
-  /shorten:
+  /api/v1/shorten:
     post:
       consumes:
       - application/json
