@@ -62,13 +62,16 @@ func (s *Fiber) initializeShortURLHandler() {
 	}
 
 	repos := repositories.NewDB(redis)
-	service := services.NewShortURLService(repos)
-	handler := rest.NewShortURLHandler(service)
+	shortURLService := services.NewShortURLService(repos)
+	paste := services.NewPasteService(repos)
+	handlerShortURL := rest.NewShortURLHandler(shortURLService, paste)
+	handlerPaste := rest.NewPasteHandler(paste)
 
 	r := s.app.Group("/api/v1")
-	r.Post("/shorten", handler.CreateShortURL)
+	r.Post("/shorten", handlerShortURL.CreateShortURL)
+	r.Post("/paste", handlerPaste.CreatePaste)
 
-	s.app.Get("/:url", handler.ResolveURL)
+	s.app.Get("/:code", handlerShortURL.ResolveURL)
 }
 
 func (s *Fiber) startServerWithGrafeculShutdown() {

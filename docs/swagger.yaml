@@ -1,5 +1,27 @@
 basePath: /api/v1
 definitions:
+  rest.CreatePasteRequest:
+    properties:
+      content:
+        example: Your content
+        minLength: 5
+        type: string
+      duration:
+        example: 3
+        minimum: 1
+        type: integer
+      paste_id:
+        example: optional
+        minLength: 5
+        type: string
+      title:
+        example: Title
+        minLength: 5
+        type: string
+    required:
+    - content
+    - title
+    type: object
   rest.CreateShortURLRequest:
     properties:
       custom_url:
@@ -8,6 +30,7 @@ definitions:
         type: string
       duration:
         example: 3
+        minimum: 1
         type: integer
       original_url:
         example: https://www.google.com/
@@ -22,10 +45,30 @@ definitions:
       request_id:
         type: string
     type: object
+  rest.PasteResponseSuccess:
+    properties:
+      data:
+        $ref: '#/definitions/rest.createPasteResponse'
+    type: object
   rest.ShortURLResponseSuccess:
     properties:
       data:
         $ref: '#/definitions/rest.createShortURLResponse'
+    type: object
+  rest.createPasteResponse:
+    properties:
+      content:
+        type: string
+      created:
+        type: string
+      expires:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+      url:
+        type: string
     type: object
   rest.createShortURLResponse:
     properties:
@@ -48,6 +91,36 @@ info:
   title: Short URL API
   version: "0.1"
 paths:
+  /paste:
+    post:
+      consumes:
+      - application/json
+      description: Create a paste
+      parameters:
+      - description: Create Paste Request
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/rest.CreatePasteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/rest.PasteResponseSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest.ErrorResponse'
+      summary: create a paste
+      tags:
+      - Paste
   /shorten:
     post:
       consumes:

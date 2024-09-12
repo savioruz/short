@@ -11,14 +11,16 @@ import (
 )
 
 type ShortURLHandler struct {
-	service   *services.ShortURLService
-	validator *validator.Validate
+	shortURLService *services.ShortURLService
+	pasteService    *services.PasteService
+	validator       *validator.Validate
 }
 
-func NewShortURLHandler(service *services.ShortURLService) *ShortURLHandler {
+func NewShortURLHandler(shortURLService *services.ShortURLService, pasteService *services.PasteService) *ShortURLHandler {
 	return &ShortURLHandler{
-		service:   service,
-		validator: validator.New(),
+		shortURLService: shortURLService,
+		pasteService:    pasteService,
+		validator:       validator.New(),
 	}
 }
 
@@ -43,7 +45,7 @@ func (h *ShortURLHandler) CreateShortURL(c *fiber.Ctx) error {
 		return HandleError(c, fiber.StatusBadRequest, err)
 	}
 
-	s, err := h.service.CreateShortURL(req.OriginalURL, req.CustomURL, req.Duration)
+	s, err := h.shortURLService.CreateShortURL(req.OriginalURL, req.CustomURL, req.Duration)
 	if err != nil {
 		return HandleError(c, fiber.StatusInternalServerError, err)
 	}
@@ -57,18 +59,37 @@ func (h *ShortURLHandler) CreateShortURL(c *fiber.Ctx) error {
 	})
 }
 
+// ResolveURL function is a handler to resolve a short URL or paste data automatically
 func (h *ShortURLHandler) ResolveURL(c *fiber.Ctx) error {
-	shortCode := c.Params("url")
-	if shortCode == "" {
+	code := c.Params("code")
+	if code == "" {
 		return HandleError(c, fiber.StatusBadRequest, errors.New("invalid short code"))
 	}
 
-	originalURL, err := h.service.GetLongURL(shortCode)
-	if errors.Is(err, redis.Nil) {
-		return HandleError(c, fiber.StatusNotFound, errors.New("url not found"))
-	} else if err != nil {
-		return HandleError(c, fiber.StatusInternalServerError, err)
+	// Check if the code corresponds to a short URL
+	shortUrl, err := h.shortURLService.GetLongURL(code)
+	if err == nil {
+		return c.Redirect(shortUrl, fiber.StatusMovedPermanently)
+	} else if errors.Is(err, redis.Nil) {
+		return HandleError(c, fiber.StatusNotFound, errors.New("shorten URL not found"))
 	}
 
-	return c.Redirect(originalURL, fiber.StatusMovedPermanently)
+	// If no short URL is found, check if it's a paste
+	paste, err := h.pasteService.GetPaste(code)
+	if err == nil {
+		return c.Status(fiber.StatusOK).JSON(PasteResponseSuccess{
+			Data: createPasteResponse{
+				ID:      paste.ID,
+				URL:     fmt.Sprintf("%s/%s", c.BaseURL(), paste.ID),
+				Title:   paste.Title,
+				Content: paste.Content,
+				Created: paste.CreatedAt.Format(time.RFC3339),
+				Expires: paste.ExpiresAt.Format(time.RFC3339),
+			},
+		})
+	} else if errors.Is(err, redis.Nil) {
+		return HandleError(c, fiber.StatusNotFound, errors.New("no matching short URL or paste found"))
+	}
+
+	return HandleError(c, fiber.StatusInternalServerError, err)
 }

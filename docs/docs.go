@@ -23,6 +23,52 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/paste": {
+            "post": {
+                "description": "Create a paste",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Paste"
+                ],
+                "summary": "create a paste",
+                "parameters": [
+                    {
+                        "description": "Create Paste Request",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/rest.CreatePasteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/rest.PasteResponseSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/rest.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/shorten": {
             "post": {
                 "description": "Shorten a URL",
@@ -71,6 +117,35 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "rest.CreatePasteRequest": {
+            "type": "object",
+            "required": [
+                "content",
+                "title"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "minLength": 5,
+                    "example": "Your content"
+                },
+                "duration": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 3
+                },
+                "paste_id": {
+                    "type": "string",
+                    "minLength": 5,
+                    "example": "optional"
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 5,
+                    "example": "Title"
+                }
+            }
+        },
         "rest.CreateShortURLRequest": {
             "type": "object",
             "required": [
@@ -84,6 +159,7 @@ const docTemplate = `{
                 },
                 "duration": {
                     "type": "integer",
+                    "minimum": 1,
                     "example": 3
                 },
                 "original_url": {
@@ -103,11 +179,42 @@ const docTemplate = `{
                 }
             }
         },
+        "rest.PasteResponseSuccess": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/rest.createPasteResponse"
+                }
+            }
+        },
         "rest.ShortURLResponseSuccess": {
             "type": "object",
             "properties": {
                 "data": {
                     "$ref": "#/definitions/rest.createShortURLResponse"
+                }
+            }
+        },
+        "rest.createPasteResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created": {
+                    "type": "string"
+                },
+                "expires": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },
