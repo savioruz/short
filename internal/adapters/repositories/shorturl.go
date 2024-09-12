@@ -26,14 +26,11 @@ func (s *DB) CreateShortURL(originalURL string, shortCode *string, duration *int
 
 	key := s.setKey("shorten", shorten)
 	now := time.Now()
-	var expiresAt time.Time
-	var expireDuration time.Duration
+	expiresAt := now.Add(constants.DefaultDuration)
+	expireDuration := constants.DefaultDuration
 	if duration != nil {
 		expiresAt = now.Add((time.Duration(*duration)) * constants.DefaultDuration)
 		expireDuration = (time.Duration(*duration)) * constants.DefaultDuration
-	} else {
-		expiresAt = now.Add(constants.DefaultDuration)
-		expireDuration = constants.DefaultDuration
 	}
 
 	shortURL := &entities.ShortURL{
