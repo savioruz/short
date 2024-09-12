@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"errors"
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/savioruz/short/internal/cores/entities"
 	"github.com/savioruz/short/pkg/constants"
@@ -50,7 +49,7 @@ func (s *DB) CreateShortURL(originalURL string, shortCode *string, duration *int
 
 func (s *DB) GetLongURL(shortCode string) (string, error) {
 	var shortURL entities.ShortURL
-	key := fmt.Sprintf("shorten:%s", shortCode)
+	key := s.setKey("shorten", shortCode)
 
 	err := s.cache.Get(key, &shortURL)
 	if err != nil {
