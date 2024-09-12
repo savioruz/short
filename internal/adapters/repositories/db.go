@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/savioruz/short/internal/adapters/cache"
 	"github.com/savioruz/short/internal/cores/ports"
+	"time"
 )
 
 type DB struct {
@@ -32,4 +33,16 @@ func (s *DB) checkCustomKey(keyType, customKey string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func (s *DB) calcExpiration(duration *int8, defaultDuration time.Duration) (time.Time, time.Time, time.Duration) {
+	now := time.Now()
+	expireDuration := defaultDuration
+
+	if duration != nil {
+		expireDuration = time.Duration(*duration) * defaultDuration
+	}
+
+	expiresAt := now.Add(expireDuration)
+	return now, expiresAt, expireDuration
 }

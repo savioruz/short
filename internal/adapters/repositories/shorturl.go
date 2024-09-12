@@ -5,7 +5,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/savioruz/short/internal/cores/entities"
 	"github.com/savioruz/short/pkg/constants"
-	"time"
 )
 
 func (s *DB) CreateShortURL(originalURL string, shortCode *string, duration *int8) (*entities.ShortURL, error) {
@@ -24,13 +23,7 @@ func (s *DB) CreateShortURL(originalURL string, shortCode *string, duration *int
 	}
 
 	key := s.setKey("shorten", shorten)
-	now := time.Now()
-	expiresAt := now.Add(constants.DefaultDuration)
-	expireDuration := constants.DefaultDuration
-	if duration != nil {
-		expiresAt = now.Add((time.Duration(*duration)) * constants.DefaultDuration)
-		expireDuration = (time.Duration(*duration)) * constants.DefaultDuration
-	}
+	now, expiresAt, expireDuration := s.calcExpiration(duration, constants.DefaultDuration)
 
 	shortURL := &entities.ShortURL{
 		OriginalURL: originalURL,
