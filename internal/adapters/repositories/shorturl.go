@@ -10,20 +10,21 @@ import (
 )
 
 func (s *DB) CreateShortURL(originalURL string, shortCode *string, duration *int8) (*entities.ShortURL, error) {
-	var shorten, key string
-	if shortCode == nil || *shortCode == "" {
-		shorten = uuid.NewString()[:6]
-	} else {
-		var shortURL entities.ShortURL
-		key = s.SetKey("shorten", *shortCode)
-		err := s.cache.Get(key, &shortURL)
-		if err == nil || shortURL.ShortCode != "" {
+	shorten := uuid.NewString()[:6]
+	if shortCode != nil && *shortCode != "" {
+		exist, err := s.checkCustomKey("shorten", *shortCode)
+		if err != nil {
+			return nil, err
+		}
+
+		if exist {
 			return nil, errors.New("shorten custom url already exists")
 		}
+
 		shorten = *shortCode
 	}
 
-	key = s.SetKey("shorten", shorten)
+	key := s.setKey("shorten", shorten)
 	now := time.Now()
 	var expiresAt time.Time
 	var expireDuration time.Duration
